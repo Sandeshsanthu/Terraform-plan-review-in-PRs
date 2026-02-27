@@ -1,0 +1,45 @@
+on:
+ pull_request:
+
+permissions:
+ contents: read
+ id-token: write
+
+jobs:
+ terraform:
+ runs-on: ubuntu-latest
+
+ steps:
+ - name: Checkout
+ uses: actions/checkout@v3
+
+ - name: Authenticate to GCP
+ uses: google-github-actions/auth@v2
+ with:
+ workload_identity_provider: projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+ service_account: terraform-pr-bot@YOUR_PROJECT_ID.iam.gserviceaccount.com
+
+ - name: Setup Terraform
+ uses: hashicorp/setup-terraform@v2
+
+ - name: Terraform Init
+ run: terraform init
+
+ - name: Terraform Validate
+ run: terraform validate
+
+ - name: Terraform Plan
+ run: terraform plan -out=plan.out
+
+ - name: Convert Plan to JSON
+ run: terraform show -json plan.out > plan.json
+
+ - name: Run OPA Policy
+ uses: open-policy-agent/opa-github-actions@v2
+ with:
+ policy-path: policy
+ input: plan.json
+
+ - name: Check Destruction
+ run: |
+ terraform show plan.out | grep -q "will be destroyed" && exit 1 || exit 0

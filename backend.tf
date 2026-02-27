@@ -1,1 +1,6 @@
-#the mad iam in this
+terraform {
+  backend "gcs" {
+    bucket  = "prod-terraform-state-demo"
+    prefix  = "env/dev"
+  }
+}
