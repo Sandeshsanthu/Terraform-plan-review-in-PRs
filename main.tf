@@ -1,9 +1,7 @@
-provider "google" {
-  project = "YOUR_PROJECT_ID"
-  region  = "asia-south1"
+resource "random_pet" "demo" {
+  length = 2
 }
 
-resource "google_storage_bucket" "demo" {
-  name     = "sandesh-demo-bucket-unique123"
-  location = "ASIA-SOUTH1"
+output "demo_name" {
+  value = random_pet.demo.id
 }
